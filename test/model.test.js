@@ -10,7 +10,6 @@ var start = require('./common')
   , Query = require('../lib/query')
   , Schema = mongoose.Schema
   , SchemaType = mongoose.SchemaType
-  , CastError = mongoose.Error.CastError
   , ValidatorError = mongoose.Error.ValidatorError
   , ValidationError = mongoose.Error.ValidationError
   , ObjectId = Schema.Types.ObjectId
@@ -636,7 +635,7 @@ describe('Model', function(){
     });
   });
 
-  describe('casting', function(){
+  describe('casting as validation errors', function(){
     it('error', function(done){
       var db = start()
         , BlogPost = db.model('BlogPost', collection)
@@ -646,7 +645,10 @@ describe('Model', function(){
 
       try {
         post.init({
+          date: 'Test',
+          meta: {
             date: 'Test'
+          }
         });
       } catch(e){
         threw = true;
@@ -664,8 +666,10 @@ describe('Model', function(){
 
       post.save(function(err){
         assert.ok(err instanceof MongooseError);
-        assert.ok(err instanceof CastError);
+        assert.ok(err instanceof ValidationError);
+        assert.equal(2, Object.keys(err.errors).length);
         post.date = new Date;
+        post.meta.date = new Date;
         post.save(function (err) {
           db.close();
           assert.ifError(err);
@@ -694,7 +698,7 @@ describe('Model', function(){
 
       try {
         post.set('meta.date', 'Test');
-      } catch(e){
+      } catch(e) {
         threw = true;
       }
 
@@ -703,7 +707,7 @@ describe('Model', function(){
       post.save(function(err){
         db.close();
         assert.ok(err instanceof MongooseError);
-        assert.ok(err instanceof CastError);
+        assert.ok(err instanceof ValidationError);
         done();
       });
     });
@@ -724,7 +728,7 @@ describe('Model', function(){
       post.save(function(err){
         db.close();
         assert.ok(err instanceof MongooseError);
-        assert.ok(err instanceof CastError);
+        assert.ok(err instanceof ValidationError);
         done();
       });
     });
@@ -748,7 +752,7 @@ describe('Model', function(){
       post.save(function(err){
         db.close();
         assert.ok(err instanceof MongooseError);
-        assert.ok(err instanceof CastError);
+        assert.ok(err instanceof ValidationError);
         done();
       });
     });
